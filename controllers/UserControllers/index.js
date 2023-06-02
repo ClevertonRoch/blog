@@ -20,10 +20,9 @@ const create = async ( req, res )=>{
     email: email,
     password: password
   }).then(()=>{
-
     res.status(statusCode.OK).json({success: true, response: 'Registro inserido'})
   }).catch((error)=>{
-    res.status(statusCode.BAD_GATEWAY).json({success: false, response: error})
+    res.status(statusCode.BAD_GATEWAY).json({success: false, response: error.errors[0].message})
   })
 }
 
