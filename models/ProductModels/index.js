@@ -1,7 +1,9 @@
 const connection = require('../../database/connection')
 const Sequelize = require('sequelize')
-// const User = require('./../UserModels')
-// const bcrypt = require('bcrypt')
+const User = require('./../UserModels')
+const Category = require('./../../models/Categories')
+const SubCategory = require('./../../models/SubCategories')
+
 
 const Product = connection.define('products',{
   name: {
@@ -23,10 +25,10 @@ const Product = connection.define('products',{
 
 })
 
-// Product.belongsTo(User)
-// User.hasMany(Product)
+Product.belongsTo(User)
+Product.belongsTo(Category)
+Product.belongsTo(SubCategory)
 
-// Product.sync({force: true}) 
 
 module.exports = Product
 
