@@ -11,11 +11,11 @@ const authenticate = require('./../../middleware/auth/index')
  
 
 router.get('/users', authenticate, userController.findAll)
-router.get('/user/:id?', authenticate, validationData(userSchema.idUserSchema,'params'), userController.findOne)
-router.delete('/user/:id?', authenticate, validationData(userSchema.idUserSchema,'params'), userController.destroy)
-router.post('/user', authenticate,validationData(userSchema.createUserSchema,'body') ,userController.create)
-router.put('/user', authenticate,validationData(userSchema.updateUserSchema,'body') ,userController.update)
-router.post('/user/auth', authenticate,validationData(userSchema.authUserSchema,'body') ,userController.authention)
+router.get('/user/:id?', authenticate, validationData(userSchema.id,'params'), userController.findOne)
+router.delete('/user/:id?', authenticate, validationData(userSchema.id,'params'), userController.destroy)
+router.post('/user', authenticate,validationData(userSchema.create,'body') ,userController.create)
+router.put('/user', authenticate,validationData(userSchema.update,'body') ,userController.update)
+router.post('/user/auth', authenticate,validationData(userSchema.authenticate,'body') ,userController.authention)
 
 
 

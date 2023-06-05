@@ -1,34 +1,34 @@
 const yup = require('yup')
 
-const createUserSchema = yup.object().shape({
-  name: yup.string().min(2).required(),
-  email: yup.string().email().required(),
-  password: yup.string().min(4).required()
+const create = yup.object().shape({
+  name: yup.string().min(2).trim().strict().required(),
+  email: yup.string().email().trim().strict().required(),
+  password: yup.string().min(4).trim().strict().required()
 })
 
-const updateUserSchema = yup.object().shape({
+const update = yup.object().shape({
   id: yup.number().integer().required(),
   name: yup.string().min(2).required(),
   email: yup.string().email().required()
 })
 
-const authUserSchema = yup.object().shape({
+const authenticate = yup.object().shape({
   password: yup.string().min(4).required(),
   email: yup.string().email().required()
 })
 
-const idUserSchema = yup.object().shape({
+const id = yup.object().shape({
   id: yup.number().integer().required(),
 })
-const emailUserSchema = yup.object().shape({
+const email = yup.object().shape({
   email: yup.string().email().required()
 })
 
 
 module.exports = {
-  createUserSchema,
-  updateUserSchema,
-  idUserSchema,
-  emailUserSchema,
-  authUserSchema
+  create,
+  update,
+  id,
+  email,
+  authenticate
 }
