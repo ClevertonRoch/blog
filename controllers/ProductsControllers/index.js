@@ -1,7 +1,10 @@
 const httpStatus = require('http-status')
+const productModel = require('./../../models/ProductModels')
+const userModel = require('./../../models/UserModels')
 const subCategoryModel = require('./../../models/SubCategories')
 const categoryModel = require('./../../models/Categories')
 const slugify = require('slugify')
+const Sequelize = require('sequelize')
 
 
 
@@ -16,58 +19,91 @@ const create = async (req, res) => {
     subcategoryId: req.body.subcategoryId,
     categoryId: req.body.categoryId
   }
-  try {
-    var checkSub = await subCategoryModel.findOne({ where: { subCategory: data.subCategory } })
-  } catch (error) {
-    res.status(httpStatus.BAD_GATEWAY).json({ success: false, response: error })
-    return
-  }
-  if (checkSub) {
-    res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa Sub-categoria já está registrada' })
-    return
-  }
+
   try {
     var checkCar = await categoryModel.findOne({ where: { id: data.categoryId } })
+    if (!checkCar) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa categoria é invalida' })
+      return
+    }
+
+    var checkSub = await subCategoryModel.findOne({
+      where: {
+        id: data.subcategoryId,
+        categoryId: {
+          [Sequelize.Op.eq]: data.categoryId
+        }
+      }
+    })
+    if (!checkSub) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'A categoria selecionada não possui uma sub-categoria com esse nome' })
+      return
+    }
+
+    var checkProd = await productModel.findOne({
+      where: {
+        name: data.name,
+        subcategoryId: {
+          [Sequelize.Op.eq]: data.subcategoryId
+        }
+      }
+    })
+    if (checkProd) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa Sub-categoria já possui um produto com esse nome registrada' })
+      return
+    }
+
+    var checkUser = await userModel.findOne({
+      where: {
+        id: data.userId
+      }
+    })
+    if (!checkUser) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'O id de usuario para registro não é válido' })
+      return
+    }
+
   } catch (error) {
     res.status(httpStatus.BAD_GATEWAY).json({ success: false, response: error })
     return
   }
-  if (!checkCar) {
-    res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa categoria é invalida' })
-    return
-  }
   try {
-    await subCategoryModel.create(data)
+    await productModel.create(data)
     res.status(httpStatus.OK).json({ success: true, response: 'Registro realizado' })
     return
   } catch (error) {
     res.status(httpStatus.BAD_GATEWAY).json({ success: false, response: error })
     return
   }
+
 }
 
 const findAll = async (req, res) => {
   try {
-    const subCategory = await subCategoryModel.findAll({
-      attributes: [
-        ['id', 'id_subCategory'],
-        'subCategory',
-      ],
+    var product = await productModel.findAll({
+      attributes: ['id', 'name', 'description', 'price'],
       include: [
         {
           model: categoryModel,
           attributes: [
-            ['id', 'id_category'],
-            'category'
+            'id', 'category'
           ]
+        },
+        {
+          model: subCategoryModel,
+          attributes: ['id', 'subcategory']
+        },
+        {
+          model: userModel,
+          attributes: ['id', 'name']
         }
       ]
     })
-    if (!subCategory.length > 0) {
-      res.status(httpStatus.OK).json({ success: true, response: 'Nenhum registro encontrado' })
+    if (!product.length > 0) {
+      res.status(httpStatus.OK).json({ success: true, response: 'Nenhum produto encontrado' })
       return
     }
-    res.status(httpStatus.OK).json({ success: true, response: subCategory })
+    res.status(httpStatus.OK).json({ success: true, response: product })
     return
 
   } catch (error) {
@@ -76,23 +112,25 @@ const findAll = async (req, res) => {
   }
 }
 
-const findId = async (req, res) => {
+const findByPk = async (req, res) => {
   let id = req.params.id
   try {
-    const serch = await subCategoryModel.findByPk(id, {
+    const serch = await productModel.findByPk(id, {
       attributes: [
-        ['id', 'id_subcat'],
-        'subCategory',
-        ['slug', 'slug_sub']
+        'id', 'name', 'description', 'price'
       ],
       include: [
         {
           model: categoryModel,
-          attributes: [
-            ['id', 'id_cat'],
-            ['slug', 'slug_cat'],
-            'category'
-          ]
+          attributes: ['id', 'category']
+        },
+        {
+          model: subCategoryModel,
+          attributes: ['id', 'subcategory']
+        },
+        {
+          model: userModel,
+          attributes: ['id', 'name']
         }
       ]
     })
@@ -107,34 +145,74 @@ const findId = async (req, res) => {
     return
   }
 
+
 }
 
 const update = async (req, res) => {
   let data = {
     id: req.body.id,
-    subCategory: req.body.subCategory,
-    slug: slugify(req.body.subCategory),
+    name: req.body.name,
+    slug: slugify(req.body.name),
+    description: req.body.description,
+    price: req.body.price,
+    userId: req.body.userId,
+    subcategoryId: req.body.subcategoryId,
     categoryId: req.body.categoryId
   }
+
   try {
-    var check = await subCategoryModel.findByPk(data.id)
+    var product = await productModel.findByPk(data.id)
+    if (!product) {
+      res.status(httpStatus.NOT_FOUND).json({ success: false, response: 'O produto não foi encontrado' })
+      return
+    }
+    let checkCar = await categoryModel.findOne({ where: { id: data.categoryId } })
+    if (!checkCar) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa categoria é invalida' })
+      return
+    }
+    let checkSub = await subCategoryModel.findOne({
+      where: {
+        id: data.subcategoryId,
+        categoryId: {
+          [Sequelize.Op.eq]: data.categoryId
+        }
+      }
+    })
+    if (!checkSub) {
+      res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'A categoria selecionada não possui uma sub-categoria com esse nome' })
+      return
+    }
+    
   } catch (error) {
     res.status(httpStatus.BAD_GATEWAY).json({ success: false, response: error })
     return
   }
-  if (!check) {
-    res.status(httpStatus.NOT_FOUND).json({ success: false, response: 'Nenhum registro encontrado' })
-    return
+
+  if (product.name !== data.name) {
+    try {
+      var checkUnique = await productModel.findOne({
+        where:
+        {
+          name: data.name,
+          subcategoryId: {
+            [Sequelize.Op.eq]: data.subcategoryId
+          }
+        }
+      })
+      if (checkUnique) {
+        res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa sub-categoria já possui um produto com esse nome registrado' })
+        return
+      }
+    } catch (error) {
+      res.status(httpStatus.BAD_GATEWAY).json({ success: false, response: error })
+      return
+    }
+
   }
-  if (check.subCategory !== data.subCategory) {
-    var checkUnique = await subCategoryModel.findOne({ where: { subCategory: data.subCategory } })
-  }
-  if (checkUnique) {
-    res.status(httpStatus.BAD_REQUEST).json({ success: false, response: 'Essa sub-categoria já está cadastrada' })
-    return
-  }
+
   try {
-    await subCategoryModel.update(data, { where: { id: data.id } })
+    await productModel.update(data, { where: { id: data.id } })
     res.status(httpStatus.OK).json({ success: true, response: 'Registro realizado' })
     return
   } catch (error) {
@@ -156,7 +234,7 @@ const destroy = async (req, res) => {
     return
   }
   try {
-    await subCategoryModel.destroy({where: {id: id}})
+    await subCategoryModel.destroy({ where: { id: id } })
     res.status(httpStatus.OK).json({ success: true, response: 'Registro deletado' })
     return
   } catch (error) {
@@ -169,7 +247,7 @@ const destroy = async (req, res) => {
 module.exports = {
   create,
   findAll,
-  findId,
+  findByPk,
   update,
   destroy
 }

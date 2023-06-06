@@ -6,11 +6,11 @@ const subCatSchema = require('../../middleware/validationYup/schemasYup/productS
 const validaDataYup = require('../../middleware/validationYup/validationData')
 
 
-router.get('/subcategory', productController.findAll)
-router.get('/subcategory/:id', validaDataYup(subCatSchema.id, 'params'), productController.findByPk)
-router.post('/subcategory', validaDataYup(subCatSchema.create, 'body'), productController.create)
-router.put('/subcategory', validaDataYup(subCatSchema.update, 'body'), productController.update)
-router.delete('/subcategory/:id?', validaDataYup(subCatSchema.id, 'params'), productController.destroy)
+router.get('/products', productController.findAll)
+router.get('/product/:id', validaDataYup(subCatSchema.id, 'params'), productController.findByPk)
+router.post('/product', validaDataYup(subCatSchema.create, 'body'), productController.create)
+router.put('/product', validaDataYup(subCatSchema.update, 'body'), productController.update)
+router.delete('/product/:id?', validaDataYup(subCatSchema.id, 'params'), productController.destroy)
 
 
 

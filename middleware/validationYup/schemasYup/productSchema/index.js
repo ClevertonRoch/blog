@@ -6,7 +6,7 @@ const create = yup.object().shape({
   price: yup.number().min(1),
   userId: yup.number().min(1).integer().required(),
   categoryId: yup.number().min(1).integer().required(),
-  subCategoryId: yup.number().min(1).integer().required()
+  subcategoryId: yup.number().min(1).integer().required()
 })
 
 const update = yup.object().shape({
@@ -16,7 +16,7 @@ const update = yup.object().shape({
   price: yup.number().min(1),
   userId: yup.number().min(1).integer().required(),
   categoryId: yup.number().min(1).integer().required(),
-  subCategoryId: yup.number().min(1).integer().required()
+  subcategoryId: yup.number().min(1).integer().required()
 })
 
 const id = yup.object().shape({
