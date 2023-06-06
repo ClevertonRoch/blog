@@ -143,7 +143,7 @@ const update = async (req, res) => {
   }
 }
 
-const authention = async (req, res) =>{
+const authenticate = async (req, res) =>{
   let email = req.body.email
   let password = req.body.password
   try {
@@ -176,5 +176,5 @@ module.exports = {
   create,
   destroy,
   update,
-  authention
+  authenticate
 }
